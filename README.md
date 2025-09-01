@@ -1,28 +1,27 @@
-  Workshop Smart Contract Sui Move
-Repositori ini berisi kumpulan smart contract yang ditulis dalam bahasa Move untuk blockchain Sui. Proyek ini merupakan hasil dari pembelajaran dan praktik selama mengikuti workshop, mencakup konsep-konsep dasar hingga pola desain tingkat lanjut di Sui.
+Workshop Smart Contract Sui MoveSelamat datang di repositori Workshop Smart Contract Sui Move! Repositori ini berisi kumpulan kode dari hasil pembelajaran dan praktik pengembangan smart contract di blockchain Sui, mulai dari konsep paling dasar hingga proyek-proyek yang lebih kompleks.Saat ini, repositori ini mencakup dua proyek utama:Sistem Informasi Kampus: Sebuah modul komprehensif yang mengelola data mahasiswa, nilai, dan registrasi menggunakan pola desain umum di Sui.Token KAMPUS (Fungible Token): Implementasi standar untuk membuat, me-mint, dan membakar (burn) token fungible di jaringan Sui.🚀 Proyek Utama1. Sistem Informasi Kampus (sistem_kampus_lengkap)Ini adalah modul Move yang mensimulasikan sistem informasi akademik sederhana. Modul ini mendemonstrasikan berbagai konsep inti Sui dalam satu paket yang terintegrasi.Konsep yang Dipelajari:Structs & Tipe Data: Penggunaan tipe data dasar (u64, String, bool, address) dan vector.Owned Objects: MahasiswaProfile dan NilaiMataKuliah dimiliki secara eksklusif oleh alamat mahasiswa.Shared Object: KampusRegistry adalah objek yang dapat diakses dan dibaca oleh siapa saja di jaringan.Capability Pattern: AdminCap bertindak sebagai "kunci" yang memberikan hak akses administratif untuk fungsi-fungsi kritis seperti mendaftarkan mahasiswa baru.Events: Menggunakan events untuk memberitahu aplikasi off-chain tentang aktivitas penting seperti pendaftaran mahasiswa atau penambahan nilai.Fungsi & Logika: Implementasi fungsi dengan validasi input, kontrol akses, dan logika kondisional.2. Token KAMPUS (kampus_token)Proyek ini berisi implementasi smart contract untuk token fungible bernama KAMPUS_COIN. Ini adalah contoh standar yang mengikuti pola managed dari Sui, di mana token dapat dibuat (mint) dan dihancurkan (burn) oleh pemegang TreasuryCap.Fitur:init: Membuat metadata koin (nama, simbol, desimal) dan TreasuryCap saat pertama kali di-deploy.mint: Fungsi untuk membuat suplai koin baru. Hanya bisa dipanggil oleh pemegang TreasuryCap.burn: Fungsi untuk menghancurkan koin. Hanya bisa dipanggil oleh pemegang TreasuryCap.🛠️ Cara MenggunakanPrasyaratPastikan Anda telah menginstal Sui CLI di sistem Anda. Ikuti panduan instalasi resmi di Sui Docs jika belum.InstalasiClone repositori ini:git clone [https://github.com/raflimulyarahman/tesnet-sui-workshop.git](https://github.com/raflimulyarahman/tesnet-sui-workshop.git)
+Masuk ke direktori utama:cd tesnet-sui-workshop
+Build & DeployKarena terdapat beberapa proyek di dalam repositori ini, Anda perlu masuk ke direktori masing-masing sebelum menjalankan perintah build atau publish.Untuk Sistem Kampus:cd sistem_kampus_lengkap
+sui move build
 
-  Setiap file di dalam direktori sources dirancang untuk mendemonstrasikan fungsionalitas spesifik, mulai dari tipe data dasar hingga pola desain kompleks seperti owned objects, shared objects, dan capabilities.
+# Untuk deploy, jalankan:
+# sui client publish --gas-budget 100000000
+Untuk Token KAMPUS:cd ../kampus_token
+sui move build
 
-  📖 Isi Repositori
-  Berikut adalah penjelasan singkat untuk setiap modul smart contract yang ada di dalam repositori ini:
+# Untuk deploy, jalankan:
+# sui client publish --gas-budget 100000000
 
-  Konsep Dasar
-  belajar-string.move: Penggunaan dan manipulasi tipe data String.
-
-  belajar-number.move: Penggunaan tipe data numerik seperti u8, u32, dan u64.
-
-  belajar-bool.move: Implementasi logika menggunakan tipe data bool (boolean).
-
-  belajar-vector.move: Penggunaan vector sebagai tipe data list yang dinamis.
-
-  mahasiswa.move: Contoh struct yang menggabungkan berbagai tipe data dasar.
-
-  Pola Desain Objek Sui
-  owned-object.move: Implementasi Owned Object, di mana sebuah objek (misalnya KartuMahasiswa) dimiliki secara eksklusif oleh satu alamat.
-
-  shared-object.move: Implementasi Shared Object, di mana sebuah objek dapat diakses dan dimodifikasi oleh banyak alamat secara bersamaan, lengkap dengan kontrol akses.
-
-  capabilities-pattern.move: Contoh pola desain Capability, yaitu sebuah pola akses kontrol di mana kepemilikan sebuah objek "kunci" (AdminCap atau DosenCap) memberikan hak istimewa         untuk menjalankan fungsi tertentu.
-
-Implementasi Lanjutan
-fungsi-lengkap.move: Modul kompleks yang menggabungkan berbagai konsep seperti konstanta untuk kode error, validasi input, kontrol akses, dan logika program yang lebih rumit.
+💻 Contoh Interaksi (CLI)Setelah Anda men-deploy paket kampus_token, Anda bisa berinteraksi dengannya melalui sui client call.Contoh: Me-mint KAMPUS_COINCari ID TreasuryCap Anda:Setelah publish, TreasuryCap akan menjadi milik Anda. Cari ID-nya dengan perintah:sui client objects
+Cari objek dengan tipe yang mengandung ::campus_coin::TreasuryCap. Salin ID-nya.Jalankan Perintah mint:Gunakan template di bawah ini. Ganti PACKAGE_ID, TREASURY_CAP_ID, JUMLAH, dan ALAMAT_PENERIMA.sui client call `
+  --package <PACKAGE_ID> `
+  --module campus_coin `
+  --function mint `
+  --args <TREASURY_CAP_ID> <JUMLAH> <ALAMAT_PENERIMA> `
+  --gas-budget 10000000
+Contoh Nyata:sui client call `
+  --package 0x964afb4a7fec19a570bcd6a051399f4e9ddb8e81a32ab03b48247533a49b3246 `
+  --module campus_coin `
+  --function mint `
+  --args 0x497115abc2003448c267a96715bbb2c5223aa81e7fe126b559c17f4088efcc3d 1000 0x7e3a9c7d19c1186b2a0c4f4a332a6e5b00654321 `
+  --gas-budget 10000000
+🌟 KontribusiKontribusi, isu, dan permintaan fitur sangat diterima. Jangan ragu untuk membuka issue atau pull request jika Anda menemukan masalah atau memiliki ide untuk perbaikan.
