@@ -90,7 +90,6 @@ fun get_game_balance(): GameBalance {
     }
 }
 
-// Core Data Structures
 public struct TAMAGOSUI has drop {}
 
 public struct Pet has key, store {
@@ -120,7 +119,21 @@ public struct PetGameData has store {
     level: u8,
 }
 
-// Module Initiliazion
+// === Events ===
+
+public struct PetAdopted has copy, drop {
+    pet_id: ID,
+    name: String,
+    adopted_at: u64
+}
+public struct PetAction has copy, drop {
+    pet_id: ID,
+    action: String,
+    energy: u8,
+    happiness: u8,
+    hunger: u8
+}
+
 fun init(witness: TAMAGOSUI, ctx: &mut TxContext) {
     let publisher = package::claim(witness, ctx);
 
@@ -159,7 +172,6 @@ fun init(witness: TAMAGOSUI, ctx: &mut TxContext) {
     transfer::public_transfer(publisher, ctx.sender());
 }
 
-// Pet Adoption Function
 public entry fun adopt_pet(
     name: String,
     clock: &Clock,
@@ -199,7 +211,6 @@ public entry fun adopt_pet(
     transfer::public_transfer(pet, ctx.sender());
 }
 
-// Feed Pet Function
 public entry fun feed_pet(pet: &mut Pet) {
     assert!(!is_sleeping(pet), E_PET_IS_ASLEEP);
 
@@ -218,7 +229,6 @@ public entry fun feed_pet(pet: &mut Pet) {
     emit_action(pet, b"fed");
 }
 
-// Play with Pet Function
 public entry fun play_with_pet(pet: &mut Pet) {
     assert!(!is_sleeping(pet), E_PET_IS_ASLEEP);
 
@@ -237,7 +247,6 @@ public entry fun play_with_pet(pet: &mut Pet) {
     emit_action(pet, b"played");
 }
 
-// Work Function
 public entry fun work_for_coins(pet: &mut Pet) {
     assert!(!is_sleeping(pet), E_PET_IS_ASLEEP);
 
@@ -265,27 +274,6 @@ public entry fun work_for_coins(pet: &mut Pet) {
     emit_action(pet, b"worked");
 }
 
-// Level Up Function
-public entry fun check_and_level_up(pet: &mut Pet) {
-    assert!(!is_sleeping(pet), E_PET_IS_ASLEEP);
-
-    let gb = get_game_balance();
-
-    // Calculate required exp: level * exp_per_level
-    let required_exp = (pet.game_data.level as u64) * gb.exp_per_level;
-    assert!(pet.game_data.experience >= required_exp, E_NOT_ENOUGH_EXP);
-
-    // Level up
-    pet.game_data.level = pet.game_data.level + 1;
-    pet.game_data.experience = pet.game_data.experience - required_exp;
-
-    // Update image based on level and equipped accessory
-    update_pet_image(pet);
-
-    emit_action(pet, b"leveled_up")
-}
-
-// Sleep Function
 public entry fun let_pet_sleep(pet: &mut Pet, clock: &Clock) {
     assert!(!is_sleeping(pet), E_PET_IS_ALREADY_ASLEEP);
 
@@ -308,6 +296,7 @@ public entry fun wake_up_pet(pet: &mut Pet, clock: &Clock) {
 
     // Calculate energy gained
     let energy_gained_u64 = duration_ms / gb.sleep_energy_gain_ms;
+    // Cap energy gain to max_stat
     let energy_gained = if (energy_gained_u64 > (gb.max_stat as u64)) {
         gb.max_stat
     } else {
@@ -338,7 +327,26 @@ public entry fun wake_up_pet(pet: &mut Pet, clock: &Clock) {
     emit_action(pet, b"woke_up");
 }
 
-// Mint and Equip Accessory Functions
+
+public entry fun check_and_level_up(pet: &mut Pet) {
+    assert!(!is_sleeping(pet), E_PET_IS_ASLEEP);
+
+    let gb = get_game_balance();
+
+    // Calculate required exp: level * exp_per_level
+    let required_exp = (pet.game_data.level as u64) * gb.exp_per_level;
+    assert!(pet.game_data.experience >= required_exp, E_NOT_ENOUGH_EXP);
+
+    // Level up
+    pet.game_data.level = pet.game_data.level + 1;
+    pet.game_data.experience = pet.game_data.experience - required_exp;
+
+    // Update image based on level and equipped accessory
+    update_pet_image(pet);
+
+    emit_action(pet, b"leveled_up")
+}
+
 public entry fun mint_accessory(ctx: &mut TxContext) {
     let accessory = PetAccessory {
         id: object::new(ctx),
@@ -376,7 +384,6 @@ public entry fun unequip_accessory(pet: &mut Pet, ctx: &mut TxContext) {
     emit_action(pet, b"unequipped_item");
 }
 
-// Emit Action and Update Image
 // === Helper Functions ===
 fun emit_action(pet: &Pet, action: vector<u8>) {
     event::emit(PetAction {
